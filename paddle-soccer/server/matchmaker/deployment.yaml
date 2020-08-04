@@ -1,0 +1,31 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: matchmaker
+spec:
+  replicas: 5
+  template:
+    metadata:
+      labels:
+        role: matchmaker-server
+    spec:
+      nodeSelector:
+        role: apps
+      containers:
+      - name: matchmaker
+        image: davidkornel/game-server:matchmaker
+        imagePullPolicy: Always
+        readinessProbe:
+            httpGet:
+                path: /readiness
+                port: 8080
+                scheme: HTTP
+            periodSeconds: 5
+            timeoutSeconds: 3
+        env:
+          - name: REDIS_SERVICE
+            value: matchmaker-redis:6379
+          - name: SESSIONS_SERVICE
+            value: "http://sessions"
+        ports:
+        - containerPort: 8080

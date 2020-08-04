@@ -1,0 +1,35 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: sessions
+spec:
+  replicas: 5
+  template:
+    metadata:
+      labels:
+        role: sessions-server
+    spec:
+      nodeSelector:
+        role: apps
+      containers:
+      - name: sessions
+        image: davidkornel/game-server:sessions
+        imagePullPolicy: Always
+        readinessProbe:
+            httpGet:
+                path: /readiness
+                port: 8080
+                scheme: HTTP
+            periodSeconds: 5
+            timeoutSeconds: 3
+        env:
+          - name: REDIS_SERVICE
+            value: sessions-redis:6379
+          - name: GAME_SERVER_IMAGE
+            value: davidkornel/game-server:soccer-server
+          - name: GAME_NODE_SELECTOR
+            value: "role:game-server"
+          - name: CPU_LIMIT
+            value: "0.1"
+        ports:
+        - containerPort: 8080

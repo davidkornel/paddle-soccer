@@ -1,0 +1,24 @@
+#
+# This is here purely for demonstrative
+# purposes. In reality, we use the K8s API
+# In the `sessions` package.
+#
+
+apiVersion: v1
+kind: Pod
+metadata:
+  generateName: "game-"
+spec:
+  hostNetwork: true
+  restartPolicy: Never
+  nodeSelector:
+    role: game-server
+  containers:
+    - name: soccer-server
+      image: davidkornel/game-server:soccer-server
+      imagePullPolicy: Always
+      env:
+        - name: SESSION_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name

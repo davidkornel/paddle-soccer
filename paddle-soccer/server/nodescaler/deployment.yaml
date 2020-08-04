@@ -1,0 +1,41 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: nodescaler
+spec:
+  replicas: 1 # only want one - because it's on it's own loop to scale up and down nodes
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        role: nodescaler-server
+    spec:
+      nodeSelector:
+        role: apps
+      containers:
+      - name: nodescaler
+        image: davidkornel/game-server:nodescaler
+        imagePullPolicy: Always
+        livenessProbe:
+            httpGet:
+                path: /healthz
+                port: 8080
+                scheme: HTTP
+            periodSeconds: 5
+            timeoutSeconds: 3
+        env:
+          - name: NODE_SELECTOR
+            value: "role=game-server"
+          - name: CPU_REQUEST
+            value: "0.1"
+          - name: BUFFER_COUNT
+            value: "10"
+          - name: TICK
+            value: "10s"
+          - name: SHUTDOWN_NODE
+            value: "20s"
+          - name: MIN_NODE
+            value: "1"
+          - name: MAX_NODE
+            value: "15"
